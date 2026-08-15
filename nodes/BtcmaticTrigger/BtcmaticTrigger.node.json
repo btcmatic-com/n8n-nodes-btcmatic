@@ -1,0 +1,18 @@
+{
+	"node": "n8n-nodes-btcmatic.btcmaticTrigger",
+	"nodeVersion": "1.0",
+	"codexVersion": "1.0",
+	"categories": ["Finance & Accounting", "Development"],
+	"resources": {
+		"credentialDocumentation": [
+			{
+				"url": "https://btcmatic.com/integrations/n8n"
+			}
+		],
+		"primaryDocumentation": [
+			{
+				"url": "https://btcmatic.com/integrations/n8n"
+			}
+		]
+	}
+}
