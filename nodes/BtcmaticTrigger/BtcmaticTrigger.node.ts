@@ -16,6 +16,9 @@ interface WebhookEndpointRow {
 	created_at: string;
 }
 
+// Trigger nodes cannot be AI tools; the community-package scanner rejects
+// usableAsTool on triggers while this older lint rule still asks for it.
+// eslint-disable-next-line @n8n/community-nodes/node-usable-as-tool
 export class BtcmaticTrigger implements INodeType {
 	description: INodeTypeDescription = {
 		displayName: 'BTCMatic Trigger',
@@ -25,7 +28,6 @@ export class BtcmaticTrigger implements INodeType {
 		version: 1,
 		subtitle: 'on rule fire',
 		description: 'Starts a workflow when a BTCMatic rule fires and delivers a webhook',
-		usableAsTool: true,
 		defaults: {
 			name: 'BTCMatic Trigger',
 		},
