@@ -23,6 +23,9 @@
         "url": "https://github.com/btcmatic-com/n8n-nodes-btcmatic.git"
     },
     "packageManager": "pnpm@10.26.2",
+    "publishConfig": {
+        "access": "public"
+    },
     "scripts": {
         "build": "n8n-node build",
         "build:watch": "tsc --watch",
