@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.2
+
+- Switch npm publishing to OIDC trusted publishing (no long-lived tokens).
+
 ## 0.1.1
 
 - Remove usableAsTool from the trigger node (community-package scanner requirement).

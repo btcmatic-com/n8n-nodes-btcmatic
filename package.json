@@ -1,6 +1,6 @@
 {
     "name": "n8n-nodes-btcmatic",
-    "version": "0.1.1",
+    "version": "0.1.2",
     "description": "n8n community node for BTCMatic — Bitcoin event engine: react to rule fires, manage rules, run backtests and send events into webhook-triggered rules",
     "license": "MIT",
     "homepage": "https://btcmatic.com/integrations/n8n",
