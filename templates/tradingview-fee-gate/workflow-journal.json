@@ -1,0 +1,82 @@
+{
+  "name": "BTCMatic fire → trade journal (Google Sheets)",
+  "nodes": [
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "f47ac10b-58cc-4372-a567-0e02b2c3d411",
+      "name": "BTCMatic Fire",
+      "type": "n8n-nodes-btcmatic.btcmaticTrigger",
+      "typeVersion": 1,
+      "position": [0, 0],
+      "webhookId": "f47ac10b-58cc-4372-a567-0e02b2c3d411",
+      "credentials": {
+        "btcmaticApi": {
+          "name": "BTCMatic API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Flatten a BTCMatic fire delivery into journal columns. The payload is\n// { claim_key, rule_id, rule_name, event, trace, outcome? } — the trace\n// lists every condition leaf with its value and pass/fail, so the journal\n// records WHY the rule fired, not just that it did.\nconst fire = $json;\nconst payload = fire.event?.payload ?? {};\nconst leaves = fire.trace?.leaves ?? fire.trace ?? [];\nconst traceText = Array.isArray(leaves)\n  ? leaves\n      .map((l) => `${l.metric}${l.value !== undefined ? ' ' + l.value : ''} ${l.op} ${l.threshold} (${l.passed ? 'pass' : 'fail'}${l.reason ? ': ' + l.reason : ''})`)\n      .join('; ')\n  : JSON.stringify(leaves);\n\n// The fee gate is a canonical engine metric, so its observed value lives in\n// the evaluation trace (not the alert payload).\nconst feeLeaf = Array.isArray(leaves) ? leaves.find((l) => l.metric === 'fee_next_block') : undefined;\n\nreturn [{\n  json: {\n    fired_at: $now.toISO(),\n    rule: fire.rule_name ?? fire.rule_id ?? '',\n    signal: payload.signal ?? '',\n    ticker: payload.ticker ?? '',\n    rsi: payload.rsi ?? '',\n    price: payload.price ?? '',\n    fee_next_block: feeLeaf?.value ?? '',\n    trace: traceText,\n    claim_key: fire.claim_key ?? '',\n    signature_valid: fire.signature_valid === true\n  }\n}];"
+      },
+      "id": "f47ac10b-58cc-4372-a567-0e02b2c3d412",
+      "name": "Flatten Fire",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [220, 0]
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "mode": "url",
+          "value": "REPLACE_WITH_GOOGLE_SHEET_URL"
+        },
+        "sheetName": {
+          "__rl": true,
+          "mode": "name",
+          "value": "Journal"
+        },
+        "columns": {
+          "mappingMode": "autoMapInputData",
+          "value": {}
+        },
+        "options": {}
+      },
+      "id": "f47ac10b-58cc-4372-a567-0e02b2c3d413",
+      "name": "Append to Journal",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [440, 0]
+    }
+  ],
+  "connections": {
+    "BTCMatic Fire": {
+      "main": [
+        [
+          {
+            "node": "Flatten Fire",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Flatten Fire": {
+      "main": [
+        [
+          {
+            "node": "Append to Journal",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {},
+  "pinData": {}
+}

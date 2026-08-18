@@ -1,0 +1,76 @@
+{
+  "name": "TradingView signal + cheap-fee gate → BTCMatic",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "tradingview-signal",
+        "options": {}
+      },
+      "id": "f47ac10b-58cc-4372-a567-0e02b2c3d401",
+      "name": "TradingView Alert",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [0, 0],
+      "webhookId": "f47ac10b-58cc-4372-a567-0e02b2c3d401"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Validate and flatten the TradingView alert into ONE flat event.\n// The fee gate is NOT fetched here: BTCMatic keeps its own live mempool\n// view, and the rule's fee_next_block leaf is evaluated by the engine\n// with fresh data at decision time. The evaluation trace will show every\n// leaf (signal, rsi, fee_next_block, …) with pass/fail.\nconst alert = $json.body ?? {};\n\nconst rsi = Number(alert.rsi);\nconst price = Number(alert.price);\nif (!Number.isFinite(rsi) || !Number.isFinite(price)) {\n  throw new Error('TradingView alert must carry numeric \"rsi\" and \"price\" fields — check the alert message JSON (see README)');\n}\n\nreturn [{\n  json: {\n    fields: {\n      signal: String(alert.signal ?? 'tv_alert'),\n      ticker: String(alert.ticker ?? 'UNKNOWN'),\n      rsi,\n      price\n    },\n    // Dedup on the TradingView alert itself so a retry (or a manually\n    // re-run execution) can never land as a fresh event, even if you later\n    // add fields that vary between attempts.\n    idempotency: `tv:${alert.ticker ?? 'x'}:${alert.time ?? $execution.id}`.slice(0, 128)\n  }\n}];"
+      },
+      "id": "f47ac10b-58cc-4372-a567-0e02b2c3d403",
+      "name": "Compose Event",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [220, 0]
+    },
+    {
+      "parameters": {
+        "resource": "inboundHook",
+        "operation": "sendEvent",
+        "hookUrl": "/hooks/whi_REPLACE_ME/REPLACE_WITH_HOOK_TOKEN",
+        "fields": "={{ $json.fields }}",
+        "sendOptions": {
+          "idempotencyKey": "={{ $json.idempotency }}",
+          "signingSecret": "REPLACE_WITH_HOOK_SIGNING_SECRET"
+        }
+      },
+      "id": "f47ac10b-58cc-4372-a567-0e02b2c3d404",
+      "name": "Send to BTCMatic",
+      "type": "n8n-nodes-btcmatic.btcmatic",
+      "typeVersion": 1,
+      "position": [440, 0],
+      "credentials": {
+        "btcmaticApi": {
+          "name": "BTCMatic API"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "TradingView Alert": {
+      "main": [
+        [
+          {
+            "node": "Compose Event",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Compose Event": {
+      "main": [
+        [
+          {
+            "node": "Send to BTCMatic",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {},
+  "pinData": {}
+}
