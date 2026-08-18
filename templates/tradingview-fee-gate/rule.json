@@ -1,0 +1,21 @@
+{
+  "name": "tv-rsi-oversold-cheap-fees",
+  "enabled": true,
+  "trigger": {
+    "type": "webhook",
+    "source": "webhook:whi_REPLACE_ME",
+    "throttle": "15m"
+  },
+  "condition": {
+    "all": [
+      { "metric": "signal", "op": "==", "value": "rsi_oversold" },
+      { "metric": "rsi", "op": "<=", "value": 30 },
+      { "metric": "fee_next_block", "op": "<", "value": 5 }
+    ]
+  },
+  "action": {
+    "type": "notify",
+    "channel": "telegram"
+  },
+  "on_action_result": []
+}
