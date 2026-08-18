@@ -37,7 +37,7 @@ TradingView alert ──▶ n8n webhook ──▶ BTCMatic inbound hook
 
 1. **API key** — BTCMatic Settings → API keys → create. Add it as the
    `BTCMatic API` credential in n8n (base URL `https://api.btcmatic.com`).
-2. **Inbound hook** — Settings → Webhook triggers → create (or use the node's
+2. **Inbound hook** — Settings → Channels → Inbound hooks → create (or use the node's
    *Inbound Hook → Create* operation). Copy the **delivery path** and the
    **signing secret** — both are shown exactly once.
 3. **Import `workflow-inbound.json`** and replace:
